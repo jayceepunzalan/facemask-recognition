@@ -124,7 +124,7 @@ class Window(QMainWindow):
             confidence = round(max(preds[0])*100, 2)
             original_face = cv2.resize(original_face, (800, 600))
             cv2.putText(original_face, f'Tag: {label}',(50,50),2,0.8,(0,0,0),2,cv2.LINE_AA)
-            cv2.imshow(f"Facemask Detection Tool - {filename}", original_face)
+            cv2.imshow(f"Face Mask Detector Tool - {filename}", original_face)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
