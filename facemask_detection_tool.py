@@ -1,6 +1,9 @@
 # importing libraries
 import sys
+import cv2
+import re
 import os
+import numpy as np
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, pyqtSignal
@@ -12,9 +15,7 @@ from os.path import expanduser
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
-import numpy as np
-import cv2
-import re
+
 
 def atof(text):
     try:
@@ -23,20 +24,9 @@ def atof(text):
         retval = text
     return retval
 
-
 def natural_keys(text):
     """alist.sort(key=natural_keys) sorts in human order"""
     return [ atof(c) for c in re.split(r'[+-]?([0-9]+(?:[.][0-9]*)?|[.][0-9]+)', text) ]
-
-
-class Result_Window(QWidget):
-    """Result Window."""
-    def __init__(self):
-        """Initializer."""
-        super().__init__()
-        # Window properties
-        self.setWindowTitle('Face Mask Detector Tool Result')
-        self.setFixedSize(565, 300)
 
 
 class Window(QMainWindow):
@@ -100,8 +90,7 @@ class Window(QMainWindow):
 
     # Show Results Window
     def show_results_window(self):
-        self.result = Result_Window()
-        self.result.show()
+        Result_Window()
 
 
     def detect_facemask(self, image_directory, is_image=True):
@@ -114,11 +103,11 @@ class Window(QMainWindow):
         model = load_model("model_best_weights.h5")
 
         for filename in folder_files:
-            print()
-            print(f'Image name: {filename}')
+            # print()
+            # print(f'Image name: {filename}')
 
-            face = cv2.imread(os.path.join(image_directory, filename))
-            face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+            original_face = cv2.imread(os.path.join(image_directory, filename))
+            face = cv2.cvtColor(original_face, cv2.COLOR_BGR2RGB)
             face = cv2.resize(face, (200, 200))
             face = img_to_array(face)
             face = preprocess_input(face)
@@ -133,10 +122,11 @@ class Window(QMainWindow):
             label = 'Mask' if label==0 else 'Unmask'
 
             confidence = round(max(preds[0])*100, 2)
-
-            print(label, f'{confidence}%')
-
-        self.show_results_window()
+            original_face = cv2.resize(original_face, (800, 600))
+            cv2.putText(original_face, f'Tag: {label}',(50,50),2,0.8,(0,0,0),2,cv2.LINE_AA)
+            cv2.imshow(f"Facemask Detection Tool - {filename}", original_face)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
 
     def behaviour_during_detection(self):
